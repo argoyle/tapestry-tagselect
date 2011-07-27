@@ -3,6 +3,10 @@ Description
 Tapestry-tagselect is a select component for Tapestry 5 similar to the
 version selector in recent JIRA-versions.
 
+Screenshot
+==========
+![Screenshot](https://github.com/argoyle/tapestry-tagselect/blob/master/tagselect.png)
+
 Usage
 =====
 Add a dependency to your POM:
