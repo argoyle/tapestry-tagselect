@@ -27,65 +27,65 @@ Example
 =======
 Page-class
 ----------
-public class Index {
-    @Persist
-    @Property
-    private List<String> tags;
+    public class Index {
+        @Persist
+        @Property
+        private List<String> tags;
 
-    public void onPrepare() {
-        if (this.tags == null) {
-            this.tags = new ArrayList<String>();
-        }
-    }
-
-    SelectModel onProvideCompletionsFromTags(final String input) {
-        final List<String> result = Arrays.asList("Milestone 1", "Milestone 2", "Milestone 3");
-        return new StringSelectModel(result);
-    }
-
-    private static class StringSelectModel implements SelectModel {
-        private final List<String> strings;
-
-        public StringSelectModel(final List<String> strings) {
-            this.strings = strings;
+        public void onPrepare() {
+            if (this.tags == null) {
+                this.tags = new ArrayList<String>();
+            }
         }
 
-        @Override
-        public List<OptionModel> getOptions() {
-            final List<OptionModel> options = new ArrayList<OptionModel>();
+        SelectModel onProvideCompletionsFromTags(final String input) {
+            final List<String> result = Arrays.asList("Milestone 1", "Milestone 2", "Milestone 3");
+            return new StringSelectModel(result);
+        }
 
-            for (final String string : this.strings) {
-                options.add(new OptionModelImpl(string));
+        private static class StringSelectModel implements SelectModel {
+            private final List<String> strings;
+
+            public StringSelectModel(final List<String> strings) {
+                this.strings = strings;
             }
 
-            return options;
-        }
+            @Override
+            public List<OptionModel> getOptions() {
+                final List<OptionModel> options = new ArrayList<OptionModel>();
 
-        @Override
-        public List<OptionGroupModel> getOptionGroups() {
-            return null;
-        }
+                for (final String string : this.strings) {
+                    options.add(new OptionModelImpl(string));
+                }
 
-        @Override
-        public void visit(final SelectModelVisitor visitor) {
+                return options;
+            }
+
+            @Override
+            public List<OptionGroupModel> getOptionGroups() {
+                return null;
+            }
+
+            @Override
+            public void visit(final SelectModelVisitor visitor) {
+            }
         }
     }
-}
 
 
 Template
 --------
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
-  <head>
-    <title>Example</title>
-  </head>
-  <body>
-    <form t:type="form">
-      <div t:type="tag/tagselect" t:id="tags" t:value="tags" style="width: 400px;"></div>
-      <t:submit/>
-    </form>
-  </body>
-</html>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+      <head>
+        <title>Example</title>
+      </head>
+      <body>
+        <form t:type="form">
+          <div t:type="tag/tagselect" t:id="tags" t:value="tags" style="width: 400px;"></div>
+          <t:submit/>
+        </form>
+      </body>
+    </html>
 
