@@ -9,7 +9,7 @@
 
   <groupId>se.unbound</groupId>
   <artifactId>tapestry-tagselect</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>jar</packaging>
 
   <name>Unbound Tapestry Tagselect</name>
