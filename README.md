@@ -12,7 +12,7 @@ Add a dependency to your POM:
     <dependency>
       <groupId>se.unbound</groupId>
       <artifactId>tapestry-tagselect</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
 
 Add the component to your template:
