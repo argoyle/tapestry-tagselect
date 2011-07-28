@@ -1,5 +1,6 @@
 package se.unbound.tapestry.tagselect.components;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -83,6 +84,8 @@ public class TagSelect extends AbstractField {
 
     Object onAutocomplete() {
         final String input = this.request.getParameter(TagSelect.PARAM_NAME);
+        final String currentValues = this.request.getParameter("values");
+        System.out.println("---> " + currentValues);
 
         final ComponentEventCallback<SelectModel> callback = new AutoCompleteCallback(this.model,
                 this.coercer);
@@ -93,7 +96,7 @@ public class TagSelect extends AbstractField {
 
         final MarkupWriter writer = this.factory.newPartialMarkupWriter(contentType);
 
-        this.generateResponseMarkup(writer, this.model.get());
+        this.generateResponseMarkup(writer, this.model.get(), currentValues);
 
         return new TextStreamResponse(contentType.toString(), writer.toString());
     }
@@ -115,18 +118,23 @@ public class TagSelect extends AbstractField {
      * nested &lt;li&gt; elements. Subclasses may override this to produce more involved markup (including images and
      * CSS class attributes).
      * 
-     * @param writer to write the list to
-     * @param selectModel to write each option
+     * @param writer to write the list to.
+     * @param selectModel to write each option.
+     * @param currentValues The currently selected values in the tagselect.
      */
-    protected void generateResponseMarkup(final MarkupWriter writer, final SelectModel selectModel) {
+    protected void generateResponseMarkup(final MarkupWriter writer, final SelectModel selectModel,
+            final String currentValues) {
+        final List<String> values = Arrays.asList(currentValues.split(";"));
         writer.element("ul");
 
         if (selectModel != null) {
             for (final OptionModel o : selectModel.getOptions()) {
-                writer.element("li",
-                        "id", this.toClient(o.getValue()));
-                writer.write(o.getLabel());
-                writer.end();
+                final String clientValue = this.toClient(o.getValue());
+                if (!values.contains(clientValue)) {
+                    writer.element("li", "id", clientValue);
+                    writer.write(o.getLabel());
+                    writer.end();
+                }
             }
         }
 
@@ -210,15 +218,18 @@ public class TagSelect extends AbstractField {
 
             final JSONObject config = new JSONObject();
             config.put("paramName", TagSelect.PARAM_NAME);
-            // config.put("indicator", loaderId);
             config.put("minChars", "0");
 
             final String methodAfterUpdate = "function (li) { TagSelect.addSelection(" + this.clientId
                     + ", li); }";
             config.put("updateElement", methodAfterUpdate);
+            final String callback = "function(field, query) { return query + '&values=' + $('"
+                    + this.clientId + "-values').value; }";
+            config.put("callback", callback);
 
             String configString = config.toString();
             configString = configString.replace("\"" + methodAfterUpdate + "\"", methodAfterUpdate);
+            configString = configString.replace("\"" + callback + "\"", callback);
 
             TagSelect.this.javaScriptSupport.addScript(
                     "new Ajax.Autocompleter('%s', '%s', '%s', %s);", this.clientId, menuId,

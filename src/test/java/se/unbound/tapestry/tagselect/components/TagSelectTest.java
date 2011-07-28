@@ -144,7 +144,9 @@ public class TagSelectTest extends PageTester {
     @Test
     public void onAutocompleteReturnAStreamResponseWithTheGeneratedMarkup() throws Exception {
         final TagSelect tagSelect = new TagSelect();
-        this.setPropertyValue(tagSelect, "request", new RequestMock());
+        final RequestMock request = new RequestMock();
+        request.addParameter("values", "");
+        this.setPropertyValue(tagSelect, "request", request);
         this.setPropertyValue(tagSelect, "resources", new ComponentResourcesMock());
         this.setPropertyValue(tagSelect, "responseRenderer", new ResponseRendererMock());
         this.setPropertyValue(tagSelect, "factory", new MarkupWriterFactoryMock());
@@ -157,6 +159,25 @@ public class TagSelectTest extends PageTester {
         assertNotNull("stream response", streamResponse);
         assertEquals("markup", "<html><ul><li id=\"client\">label</li></ul></html>",
                 IOUtils.toString(streamResponse.getStream()));
+    }
+
+    @Test
+    public void onAutocompleteIgnoresAlreadySelectedItemsInTheGeneratedMarkup() throws Exception {
+        final TagSelect tagSelect = new TagSelect();
+        final RequestMock request = new RequestMock();
+        request.addParameter("values", "client");
+        this.setPropertyValue(tagSelect, "request", request);
+        this.setPropertyValue(tagSelect, "resources", new ComponentResourcesMock());
+        this.setPropertyValue(tagSelect, "responseRenderer", new ResponseRendererMock());
+        this.setPropertyValue(tagSelect, "factory", new MarkupWriterFactoryMock());
+        this.setPropertyValue(tagSelect, "encoder", new ValueEncoderMock());
+
+        final SelectModelImpl selectModel = new SelectModelImpl(new OptionModelImpl("label", "value"));
+        this.setPropertyValue(tagSelect, "model", new AtomicReference<SelectModel>(selectModel));
+
+        final StreamResponse streamResponse = (StreamResponse) tagSelect.onAutocomplete();
+        assertNotNull("stream response", streamResponse);
+        assertEquals("markup", "<html><ul></ul></html>", IOUtils.toString(streamResponse.getStream()));
     }
 
     @Test
