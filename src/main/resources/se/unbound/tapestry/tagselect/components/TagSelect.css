@@ -1,6 +1,5 @@
 .u-tagselect {
 	position: relative;
-/* 	width: 50em; */
 }
 
 .u-tagselect .u-textarea {
@@ -8,8 +7,9 @@
 	float: left;
 	resize: none;
 	width: 100%;
-	height: 18px;
-	line-height: 18px;
+	height: 1.5em;
+	line-height: 1.5em;
+	overflow: hidden;
 }
 
 .u-tagselect .u-tag-container {
@@ -28,6 +28,10 @@
 	float: left;
 	position: relative;
 	padding: 4px 1px 1px 3px;
+	background: none;
+	line-height: 1em;
+	font-size: 100%;
+	margin: 0;
 }
 
 .u-tagselect .u-tag-container .u-tags .u-tag .u-tag-button {
@@ -45,7 +49,6 @@
 .u-tagselect .u-tag-container .u-tags .u-tag .u-tag-button span {
 	background: url("./TagSelect.png") no-repeat scroll transparent 100% -16px;
 	display: block;
-	font-size: 14px;
 	vertical-align: top;
 	position: relative;
 	padding: 0;
@@ -55,55 +58,56 @@
 	background-position: 0 0;
 	display: block;
 	font-size: 11px;
-	height: 13px;
+	height: 11px;
 	margin: 0 15px 0 0;
 	padding: 1px 0 4px 6px;
 	white-space: nowrap;
 }
 
 .u-tagselect .u-tag-container .u-tags .u-tag .u-tag-remove {
-  position: absolute;
-  top: 2px;
-  right: 0;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;	
-  text-indent: -9999px;
-  overflow: hidden;
+	position: absolute;
+	top: 2px;
+	right: 0;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	text-indent: -9999px;
+	overflow: hidden;
 }
 
 .u-tagselect .u-trigger {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 16px;
-  height: 18px;
-  cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 1em;
+	height: 1.5em;
+	cursor: pointer;
+	font-size: 1.5em;
 }
 
 DIV.u-autocomplete-menu {
-    z-index: 9999;
-    margin-top: -16px;
+	z-index: 9999;
 }
 
 DIV.u-autocomplete-menu UL {
-    border: 1px solid #eee;
-    background-color: #fff;
-    padding: 1px 1px;
-    overflow: auto;
+	border: 1px solid #eee;
+	background-color: #fff;
+	padding: 1px 1px;
+	margin: 1px;
+	overflow: auto;
 }
 
 DIV.u-autocomplete-menu LI {
-    color: black;
-    list-style-type: none;
-    padding: 0px;
-    margin: 0px;
-    border-bottom: 0px solid;
-    cursor: pointer;
+	color: black;
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+	border-bottom: 0px solid;
+	cursor: pointer;
+	background: none;
 }
 
 DIV.u-autocomplete-menu LI.selected {
-    background-color: blue;
-    color: white;
-/*     font-weight: bold; */
+	background-color: blue;
+	color: white;
 }
