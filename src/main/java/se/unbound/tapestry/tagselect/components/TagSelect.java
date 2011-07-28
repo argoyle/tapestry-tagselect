@@ -85,7 +85,6 @@ public class TagSelect extends AbstractField {
     Object onAutocomplete() {
         final String input = this.request.getParameter(TagSelect.PARAM_NAME);
         final String currentValues = this.request.getParameter("values");
-        System.out.println("---> " + currentValues);
 
         final ComponentEventCallback<SelectModel> callback = new AutoCompleteCallback(this.model,
                 this.coercer);
