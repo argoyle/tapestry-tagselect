@@ -206,10 +206,15 @@ public class TagSelect extends AbstractField {
             TagSelect.this.javaScriptSupport.addScript(
                     "TagSelect.updatePadding('%s');", this.clientId);
 
+            writer.element("div", "class", "u-clear");
             writer.element("em", "id", this.clientId + "trigger", "class", "u-trigger", "onclick",
                     "TagSelect.triggerCompletion(" + this.clientId + ")");
             writer.write("▽");
             writer.end();
+            writer.end();
+
+            TagSelect.this.javaScriptSupport.addScript(
+                    "TagSelect.registerKeyevent('%s');", this.clientId);
 
             TagSelect.this.resources.renderInformalParameters(writer);
 
@@ -219,8 +224,8 @@ public class TagSelect extends AbstractField {
             config.put("paramName", TagSelect.PARAM_NAME);
             config.put("minChars", "0");
 
-            final String methodAfterUpdate = "function (li) { TagSelect.addSelection(" + this.clientId
-                    + ", li); }";
+            final String methodAfterUpdate = "function (li) { TagSelect.addSelection('" + this.clientId
+                    + "', li); }";
             config.put("updateElement", methodAfterUpdate);
             final String callback = "function(field, query) { return query + '&values=' + $('"
                     + this.clientId + "-values').value; }";

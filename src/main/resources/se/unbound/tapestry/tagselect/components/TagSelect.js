@@ -1,9 +1,7 @@
 var TagSelect = {
 	tagId: 0,
 	
-	addSelection: function(field, li) {
-		clientId = field.id;
-		
+	addSelection: function(clientId, li) {
 		if (this.addToValueField(clientId, li)) {
 			this.addTag(clientId, li);
 			this.updatePadding(clientId);
@@ -11,12 +9,28 @@ var TagSelect = {
 		this.clearField(clientId);
 	},
 
-	removeSelection: function(field, tagId, value) {
-		clientId = field.id;
-
+	removeSelection: function(clientId, tagId, value) {
 		this.removeFromValueField(clientId, value);
 		this.removeTag(tagId);
 		this.updatePadding(clientId);
+	},
+
+	registerKeyevent: function(clientId) {
+		Event.on(clientId, 'keydown', TagSelect.handleBackspace);
+	},
+	
+	handleBackspace: function(event, field) {
+		if (!field.value && event.keyCode == 8) {
+			event.stop();
+
+			tags = $(field.id + '-tags').childElements();
+			if (tags.length > 0) {
+				value = tag.select('span.u-tag-value')[0].innerHTML;
+				TagSelect.removeSelection(field.id, tags[tags.length - 1].id, value);
+			}
+			
+			return false;
+		}
 	},
 	
 	triggerCompletion: function(field) {
@@ -42,7 +56,7 @@ var TagSelect = {
 	
 	addTag: function(clientId, li) {
 		var tagsField = $(clientId + '-tags');
-		tagsField.insert("<li class='u-tag' id='u-tag-" + TagSelect.tagId + "'><button type='button' class='u-tag-button'><span><span class='u-tag-value'>" + li.innerHTML + "</span></span></button><em class='u-tag-remove' onclick='TagSelect.removeSelection(" + clientId + ", \"u-tag-" + TagSelect.tagId++ + "\", \"" + li.innerHTML + "\")'></em></li>");
+		tagsField.insert("<li class='u-tag' id='u-tag-" + TagSelect.tagId + "'><button type='button' class='u-tag-button'><span><span class='u-tag-value'>" + li.innerHTML + "</span></span></button><em class='u-tag-remove' onclick='TagSelect.removeSelection(\"" + clientId + "\", \"u-tag-" + TagSelect.tagId++ + "\", \"" + li.innerHTML + "\")'></em></li>");
 	},
 	
 	removeTag: function(tagId) {
@@ -51,9 +65,24 @@ var TagSelect = {
 	},
 	
 	updatePadding: function(clientId) {
-		var tagContainerWidth = $(clientId + '-tag-container').getWidth();
-		var selectWidth = Element.getWidth($(clientId).getOffsetParent());
-		var textArea = $(clientId).setStyle({paddingLeft: tagContainerWidth + 'px', width: selectWidth - tagContainerWidth + 'px'});
+		textArea = $(clientId);
+		tagContainerDimensions = $(clientId + '-tag-container').getDimensions();
+		selectWidth = Element.getWidth($(clientId).getOffsetParent());
+		padding = textArea.measure('padding-top') - tagContainerDimensions.height;
+		if (padding < 0) {
+			padding += 16;
+		}
+		tags = $(clientId + '-tags').childElements();
+		if (tags.length > 0) {
+			tag = tags[tags.length - 1];
+			offset = tag.positionedOffset();
+			dimensions = tag.getDimensions();
+			right = offset.left + dimensions.width;
+			textArea.height = padding + offset.top + dimensions.height + 'px';
+			textArea.setStyle({paddingLeft: right + 'px', width: selectWidth - right + 'px', paddingTop: offset.top + 'px'});
+		} else {
+			textArea.writeAttribute('style', '');
+		}
 	},
 	
 	clearField: function(clientId) {

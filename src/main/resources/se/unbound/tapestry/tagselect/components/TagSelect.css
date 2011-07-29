@@ -77,7 +77,7 @@
 
 .u-tagselect .u-trigger {
 	position: absolute;
-	top: 0;
+	bottom: -8px;
 	right: 0;
 	width: 1em;
 	height: 1.5em;
@@ -110,4 +110,12 @@ DIV.u-autocomplete-menu LI {
 DIV.u-autocomplete-menu LI.selected {
 	background-color: blue;
 	color: white;
+}
+
+.u-clear:after {
+	content:".";
+	display:block;
+	height:0;
+	clear:both;
+	visibility:hidden;
 }
