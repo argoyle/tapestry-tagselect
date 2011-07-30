@@ -1,6 +1,7 @@
 package se.unbound.tapestry.tagselect.components;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -58,7 +59,7 @@ public class TagSelect extends AbstractField {
     private ResponseRenderer responseRenderer;
 
     @Parameter(required = true)
-    private List<Object> value;
+    private Collection<Object> value;
 
     /**
      * Allows a specific implementation of {@link ValueEncoder} to be supplied. This is used to create client-side
@@ -240,7 +241,7 @@ public class TagSelect extends AbstractField {
                     link.toAbsoluteURI(), configString);
         }
 
-        private String joinValue(final List<Object> values) {
+        private String joinValue(final Collection<Object> values) {
             final StringBuilder builder = new StringBuilder();
 
             for (final Object each : values) {

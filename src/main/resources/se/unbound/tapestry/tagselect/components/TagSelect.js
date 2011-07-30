@@ -66,22 +66,23 @@ var TagSelect = {
 	
 	updatePadding: function(clientId) {
 		textArea = $(clientId);
+		// Clear style set by script
+		textArea.writeAttribute('style', '');
+
 		tagContainerDimensions = $(clientId + '-tag-container').getDimensions();
 		selectWidth = Element.getWidth($(clientId).getOffsetParent());
-		padding = textArea.measure('padding-top') - tagContainerDimensions.height;
-		if (padding < 0) {
-			padding += 16;
-		}
+		paddingTop = textArea.measure('padding-top')
+		paddingLeft = textArea.measure('padding-left');
+
 		tags = $(clientId + '-tags').childElements();
 		if (tags.length > 0) {
 			tag = tags[tags.length - 1];
 			offset = tag.positionedOffset();
 			dimensions = tag.getDimensions();
-			right = offset.left + dimensions.width;
-			textArea.height = padding + offset.top + dimensions.height + 'px';
-			textArea.setStyle({paddingLeft: right + 'px', width: selectWidth - right + 'px', paddingTop: offset.top + 'px'});
-		} else {
-			textArea.writeAttribute('style', '');
+			newPaddingLeft = paddingLeft + offset.left + dimensions.width;
+			newWidth = selectWidth - (offset.left + dimensions.width);
+			textArea.height = paddingTop + offset.top + dimensions.height + 'px';
+			textArea.setStyle({paddingLeft: newPaddingLeft + 'px', width: newWidth + 'px', paddingTop: paddingTop + offset.top + 'px'});
 		}
 	},
 	

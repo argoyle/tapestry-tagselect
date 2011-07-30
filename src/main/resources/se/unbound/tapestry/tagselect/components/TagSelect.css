@@ -77,10 +77,10 @@
 
 .u-tagselect .u-trigger {
 	position: absolute;
-	bottom: -8px;
+	bottom: 0;
 	right: 0;
 	width: 1em;
-	height: 1.5em;
+/* 	height: 1.5em; */
 	cursor: pointer;
 	font-size: 1.5em;
 }
