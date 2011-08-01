@@ -265,8 +265,8 @@ public class TagSelect extends AbstractField {
             writer.end();
             writer.end();
             writer.end();
-            writer.element("em", "class", "u-tag-remove", "onclick", "TagSelect.removeSelection("
-                    + this.clientId + ", 'u-tag-" + itemId + "', '" + clientValue + "')");
+            writer.element("em", "class", "u-tag-remove", "onclick", "TagSelect.removeSelection('"
+                    + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
             writer.end();
             writer.end();
         }
