@@ -89,7 +89,11 @@ public class TagSelectTest extends PageTester {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS + "/tag123");
         final Element element = document.getElementById("tags-tags");
         final Pattern pattern = Pattern
-                .compile("<li id=\"u-tag-(\\d+)\" class=\"u-tag\"><button class=\"u-tag-button\" type=\"button\"><span><span class=\"u-tag-value\">tag123</span></span></button><em onclick=\"TagSelect.removeSelection\\(tags, 'u-tag-\\1', 'tag123'\\)\" class=\"u-tag-remove\"></em></li>");
+                .compile("<li id=\"u-tag-(\\d+)\" class=\"u-tag\">"
+                        + "<button class=\"u-tag-button\" type=\"button\">"
+                        + "<span><span class=\"u-tag-value\">tag123</span></span></button>"
+                        + "<em onclick=\"TagSelect.removeSelection\\('tags', 'u-tag-\\1', 'tag123'\\)\" "
+                        + "class=\"u-tag-remove\"></em></li>");
         final Matcher matcher = pattern.matcher(element.getChildMarkup());
         assertTrue(matcher.matches());
     }
