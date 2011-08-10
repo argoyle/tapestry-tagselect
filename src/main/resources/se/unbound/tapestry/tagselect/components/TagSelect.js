@@ -2,6 +2,7 @@ var TagSelect = {
 	tagId: 0,
 	
 	addSelection: function(clientId, li) {
+		this.clearIfSingleSelect(clientId);
 		if (this.addToValueField(clientId, li)) {
 			this.addTag(clientId, li);
 			this.updatePadding(clientId);
@@ -23,9 +24,9 @@ var TagSelect = {
 		if (!field.value && event.keyCode == 8) {
 			event.stop();
 
-			tags = $(field.id + '-tags').childElements();
+			var tags = $(field.id + '-tags').childElements();
 			if (tags.length > 0) {
-				value = tag.select('span.u-tag-value')[0].innerHTML;
+				var value = tag.select('span.u-tag-value')[0].innerHTML;
 				TagSelect.removeSelection(field.id, tags[tags.length - 1].id, value);
 			}
 			
@@ -40,47 +41,64 @@ var TagSelect = {
 	
 	addToValueField: function(clientId, li) {
 		var valueField = $(clientId + '-values');
-		origin = valueField.value;
-		values = $A(valueField.value.split(';'));
-		values.push(li.innerHTML);
-		result = values.uniq().join(';');
+		var origin = valueField.value;
+		if (origin.length == 0) {
+			var values = new Array();
+		} else {
+			var values = $A(valueField.value.split(';'));
+		}
+		values.push(li.textContent);
+		var result = values.uniq().join(';');
 		valueField.value = result;
 		return origin != result;
 	},
 
 	removeFromValueField: function(clientId, value) {
 		var valueField = $(clientId + '-values');
-		values = $A(valueField.value.split(';'));
+		var values = $A(valueField.value.split(';'));
 		valueField.value = values.without(value).join(';');
 	},
 	
 	addTag: function(clientId, li) {
 		var tagsField = $(clientId + '-tags');
-		tagsField.insert("<li class='u-tag' id='u-tag-" + TagSelect.tagId + "'><button type='button' class='u-tag-button'><span><span class='u-tag-value'>" + li.innerHTML + "</span></span></button><em class='u-tag-remove' onclick='TagSelect.removeSelection(\"" + clientId + "\", \"u-tag-" + TagSelect.tagId++ + "\", \"" + li.innerHTML + "\")'></em></li>");
+		tagsField.insert("<li class='u-tag' id='u-tag-" + TagSelect.tagId + "'><button type='button' class='u-tag-button'><span><span class='u-tag-value'>" + li.textContent + "</span></span></button><em class='u-tag-remove' onclick='TagSelect.removeSelection(\"" + clientId + "\", \"u-tag-" + TagSelect.tagId++ + "\", \"" + li.textContent + "\")'></em></li>");
 	},
 	
 	removeTag: function(tagId) {
 		var tag = $(tagId);
 		tag.remove();
 	},
+
+	clearIfSingleSelect: function(clientId) {
+		if ($(clientId).readAttribute('u:type') == 'single') {
+			var valueField = $(clientId + '-values');
+			valueField.value = '';
+			var tags = $(clientId + '-tags').childElements();
+			if (tags.length > 0) {
+				tags.each(function(tag) {
+					tag.remove();
+				});
+			}
+		}
+	},
 	
 	updatePadding: function(clientId) {
-		textArea = $(clientId);
+		var textArea = $(clientId);
 		// Clear style set by script
 		textArea.writeAttribute('style', '');
 
-		tagContainerDimensions = $(clientId + '-tag-container').getDimensions();
-		selectWidth = Element.getWidth($(clientId).getOffsetParent());
-		paddingTop = textArea.measure('padding-top')
-		paddingLeft = textArea.measure('padding-left');
+		var tagContainerDimensions = $(clientId + '-tag-container').getDimensions();
+		var selectWidth = Element.getWidth($(clientId).getOffsetParent());
+		var paddingTop = textArea.measure('padding-top')
+		var paddingLeft = textArea.measure('padding-left');
 
-		tags = $(clientId + '-tags').childElements();
+		var tags = $(clientId + '-tags').childElements();
 		if (tags.length > 0) {
-			tag = tags[tags.length - 1];
-			offset = tag.positionedOffset();
-			dimensions = tag.getDimensions();
-			newPaddingLeft = paddingLeft + offset.left + dimensions.width;
-			newWidth = selectWidth - (offset.left + dimensions.width);
+			var tag = tags[tags.length - 1];
+			var offset = tag.positionedOffset();
+			var dimensions = tag.getDimensions();
+			var newPaddingLeft = paddingLeft + offset.left + dimensions.width;
+			var newWidth = selectWidth - (offset.left + dimensions.width);
 			textArea.height = paddingTop + offset.top + dimensions.height + 'px';
 			textArea.setStyle({paddingLeft: newPaddingLeft + 'px', width: newWidth + 'px', paddingTop: paddingTop + offset.top + 'px'});
 		}

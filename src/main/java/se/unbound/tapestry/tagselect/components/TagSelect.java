@@ -1,5 +1,6 @@
 package se.unbound.tapestry.tagselect.components;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -59,7 +60,7 @@ public class TagSelect extends AbstractField {
     private ResponseRenderer responseRenderer;
 
     @Parameter(required = true)
-    private Collection<Object> value;
+    private Object value;
 
     /**
      * Allows a specific implementation of {@link ValueEncoder} to be supplied. This is used to create client-side
@@ -105,11 +106,22 @@ public class TagSelect extends AbstractField {
     protected void processSubmission(final String elementName) {
         final String parameterValue = this.request.getParameter(elementName + "-values");
         final String[] items = parameterValue.split(";");
-        this.value.clear();
-        for (final String string : items) {
-            if (StringUtils.isNotBlank(string)) {
-                this.value.add(this.toValue(string));
+        this.updateValue(items);
+    }
+
+    private void updateValue(final String[] items) {
+        if (this.value instanceof Collection<?>) {
+            final Collection<Object> collection = (Collection<Object>) this.value;
+            collection.clear();
+            for (final String string : items) {
+                if (StringUtils.isNotBlank(string)) {
+                    collection.add(this.toValue(string));
+                }
             }
+        } else if (items.length > 0) {
+            this.value = items[0];
+        } else {
+            this.value = null;
         }
     }
 
@@ -183,9 +195,12 @@ public class TagSelect extends AbstractField {
         @Override
         public void render(final MarkupWriter writer) {
             writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
-                    this.controlName + "-values", "value", this.joinValue(TagSelect.this.value));
+                    this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
             writer.end();
             writer.element("textarea", "autocomplete", "off", "id", this.clientId, "class", "u-textarea");
+            if (this.isSingleSelect(TagSelect.this.value)) {
+                writer.attributes("u:type", "single");
+            }
             writer.end();
 
             final String menuId = this.clientId + ":menu";
@@ -197,10 +212,9 @@ public class TagSelect extends AbstractField {
 
             writer.element("div", "id", this.clientId + "-tag-container", "class", "u-tag-container");
             writer.element("ul", "id", this.clientId + "-tags", "class", "u-tags");
-            if (TagSelect.this.value != null) {
-                for (final Object each : TagSelect.this.value) {
-                    this.writeSelectedItem(writer, each);
-                }
+            final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
+            for (final Object each : collection) {
+                this.writeSelectedItem(writer, each);
             }
             writer.end();
             writer.end();
@@ -239,6 +253,37 @@ public class TagSelect extends AbstractField {
             TagSelect.this.javaScriptSupport.addScript(
                     "new Ajax.Autocompleter('%s', '%s', '%s', %s);", this.clientId, menuId,
                     link.toAbsoluteURI(), configString);
+        }
+
+        private boolean isSingleSelect(final Object selectedValue) {
+            return !(selectedValue instanceof Collection<?>);
+        }
+
+        private Collection<Object> getSelectedTags(final Object selectedValue) {
+            final Collection<Object> selectedTags = new ArrayList<Object>();
+
+            if (selectedValue instanceof Collection<?>) {
+                selectedTags.addAll((Collection<Object>) selectedValue);
+            } else if (selectedValue != null && this.isNotBlank(selectedValue)) {
+                selectedTags.add(selectedValue);
+            }
+
+            return selectedTags;
+        }
+
+        private boolean isNotBlank(final Object selectedValue) {
+            final String stringValue = String.valueOf(selectedValue);
+            return !stringValue.trim().isEmpty();
+        }
+
+        private String getSelectedValue(final Object selectedValue) {
+            String result = "";
+            if (selectedValue instanceof Collection<?>) {
+                result = this.joinValue((Collection<Object>) selectedValue);
+            } else if (selectedValue != null) {
+                result = String.valueOf(selectedValue);
+            }
+            return result;
         }
 
         private String joinValue(final Collection<Object> values) {
