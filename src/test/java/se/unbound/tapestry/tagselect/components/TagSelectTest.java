@@ -22,20 +22,22 @@ import org.apache.tapestry5.test.PageTester;
 import org.junit.Before;
 import org.junit.Test;
 
-import se.unbound.tapestry.tagselect.components.TagSelect.AutoCompleteCallback;
+import se.unbound.tapestry.tagselect.AutoCompleteCallback;
+import se.unbound.tapestry.tagselect.LabelAwareValueEncoder;
 import se.unbound.tapestry.tagselect.helpers.Tag;
 import se.unbound.tapestry.tagselect.mocks.ComponentResourcesMock;
 import se.unbound.tapestry.tagselect.mocks.MarkupWriterFactoryMock;
 import se.unbound.tapestry.tagselect.mocks.RequestMock;
 import se.unbound.tapestry.tagselect.mocks.ResponseRendererMock;
 import se.unbound.tapestry.tagselect.mocks.TypeCoercerMock;
-import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
 import se.unbound.tapestry.tagselect.services.TagSource;
 import se.unbound.tapestry.tagselect.services.TestModule;
 
 public class TagSelectTest extends PageTester {
     private static final String PAGE_WITH_STRING_TAGS = "pagewithstringtags";
+    private static final String PAGE_WITH_SINGLE_STRING_TAG = "pagewithsinglestringtag";
     private static final String PAGE_WITH_ENCODED_TAGS = "pagewithencodedtags";
+    private static final String PAGE_WITH_SINGLE_ENCODED_TAG = "pagewithsingleencodedtag";
 
     public TagSelectTest() {
         super("se.unbound.tapestry.tagselect", "TagSelect", "app", TestModule.class);
@@ -117,6 +119,17 @@ public class TagSelectTest extends PageTester {
     }
 
     @Test
+    public void componentProcessesValueOfValuesFieldForSingleTagOnSubmit() {
+        final Document document = this.renderPage(TagSelectTest.PAGE_WITH_SINGLE_STRING_TAG);
+        final Element form = document.getElementById("form");
+        final Map<String, String> params = new HashMap<String, String>();
+        params.put("tag-values", "tag456");
+        final Document document2 = this.submitForm(form, params);
+        final Element element = document2.getElementById("tag-values");
+        assertEquals("value", "tag456", element.getAttribute("value"));
+    }
+
+    @Test
     public void componentUsesEncoderDuringRenderIfSet() {
         TagSource.TAGS.add(new Tag(Long.valueOf(123), "Tag123"));
         TagSource.TAGS.add(new Tag(Long.valueOf(456), "Tag456"));
@@ -124,6 +137,15 @@ public class TagSelectTest extends PageTester {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_ENCODED_TAGS);
         final Element element = document.getElementById("tags-values");
         assertEquals("value", "123;456", element.getAttribute("value"));
+    }
+
+    @Test
+    public void componentUsesEncoderDuringRenderIfSetForSingleTag() {
+        TagSource.TAGS.add(new Tag(Long.valueOf(456), "Tag456"));
+
+        final Document document = this.renderPage(TagSelectTest.PAGE_WITH_SINGLE_ENCODED_TAG);
+        final Element element = document.getElementById("tag-values");
+        assertEquals("value", "456", element.getAttribute("value"));
     }
 
     @Test
@@ -185,7 +207,7 @@ public class TagSelectTest extends PageTester {
     @Test
     public void callbackStoresModelInAtomicReference() {
         final AtomicReference<SelectModel> atomicReference = new AtomicReference<SelectModel>();
-        final AutoCompleteCallback callback = new TagSelect.AutoCompleteCallback(
+        final AutoCompleteCallback callback = new AutoCompleteCallback(
                 atomicReference, new TypeCoercerMock());
 
         final SelectModel model = new SelectModelImpl(new OptionModelImpl("label", "value"));

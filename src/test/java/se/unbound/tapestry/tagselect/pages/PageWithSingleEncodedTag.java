@@ -1,7 +1,6 @@
 package se.unbound.tapestry.tagselect.pages;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
@@ -12,18 +11,17 @@ import se.unbound.tapestry.tagselect.helpers.Tag;
 import se.unbound.tapestry.tagselect.helpers.TagValueEncoder;
 import se.unbound.tapestry.tagselect.services.TagSource;
 
-public class PageWithEncodedTags {
+public class PageWithSingleEncodedTag {
     @Inject
     private TagSource tagSource;
 
     @Persist
     @Property
-    private List<Tag> tags;
+    private Tag tag;
 
     void onPrepare() {
-        if (this.tags == null) {
-            this.tags = new ArrayList<Tag>();
-            this.tags.addAll(this.tagSource.getTags());
+        if (!this.tagSource.getTags().isEmpty()) {
+            this.tag = this.tagSource.getTags().get(0);
         }
     }
 
@@ -32,7 +30,7 @@ public class PageWithEncodedTags {
     }
 
     void onSuccess() {
-        System.out.println(this.tags);
-        this.tagSource.save(this.tags);
+        System.out.println(this.tag);
+        this.tagSource.save(Arrays.asList(this.tag));
     }
 }

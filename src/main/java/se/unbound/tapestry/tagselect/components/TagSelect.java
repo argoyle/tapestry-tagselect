@@ -31,7 +31,8 @@ import org.apache.tapestry5.services.ResponseRenderer;
 import org.apache.tapestry5.services.javascript.JavaScriptSupport;
 import org.apache.tapestry5.util.TextStreamResponse;
 
-import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
+import se.unbound.tapestry.tagselect.AutoCompleteCallback;
+import se.unbound.tapestry.tagselect.LabelAwareValueEncoder;
 
 /**
  * Select component similar to the version select in Jira.
@@ -119,10 +120,10 @@ public class TagSelect extends AbstractField {
                     collection.add(this.toValue(string));
                 }
             }
-        } else if (items.length > 0) {
-            this.value = this.toValue(items[0]);
+            // } else if (items.length > 0) {
         } else {
-            this.value = null;
+            this.value = this.toValue(items[0]);
+            // this.value = null;
         }
     }
 
@@ -327,28 +328,6 @@ public class TagSelect extends AbstractField {
                 return TagSelect.this.encoder.getLabel(item);
             }
             return String.valueOf(item);
-        }
-    }
-
-    /**
-     * ComponentEventCallback for the autocomplete.
-     */
-    static final class AutoCompleteCallback implements ComponentEventCallback<SelectModel> {
-        private final AtomicReference<SelectModel> model;
-        private final TypeCoercer coercer;
-
-        public AutoCompleteCallback(final AtomicReference<SelectModel> model, final TypeCoercer coercer) {
-            this.model = model;
-            this.coercer = coercer;
-        }
-
-        @Override
-        public boolean handleResult(final SelectModel result) {
-            final SelectModel matches = this.coercer.coerce(result, SelectModel.class);
-
-            this.model.set(matches);
-
-            return true;
         }
     }
 }

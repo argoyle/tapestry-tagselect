@@ -1,4 +1,4 @@
-package se.unbound.tapestry.tagselect.services;
+package se.unbound.tapestry.tagselect;
 
 import org.apache.tapestry5.ValueEncoder;
 

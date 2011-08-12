@@ -1,6 +1,6 @@
 package se.unbound.tapestry.tagselect.helpers;
 
-import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
+import se.unbound.tapestry.tagselect.LabelAwareValueEncoder;
 import se.unbound.tapestry.tagselect.services.TagSource;
 
 public class TagValueEncoder implements LabelAwareValueEncoder<Tag> {
