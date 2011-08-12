@@ -282,7 +282,11 @@ public class TagSelect extends AbstractField {
             if (selectedValue instanceof Collection<?>) {
                 result = this.joinValue((Collection<Object>) selectedValue);
             } else if (selectedValue != null) {
-                result = String.valueOf(selectedValue);
+                if (TagSelect.this.encoder != null) {
+                    result = TagSelect.this.toClient(selectedValue);
+                } else {
+                    result = String.valueOf(selectedValue);
+                }
             }
             return result;
         }

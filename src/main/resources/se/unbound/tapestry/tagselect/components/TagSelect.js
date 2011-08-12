@@ -61,7 +61,7 @@ var TagSelect = {
 	
 	addTag: function(clientId, li) {
 		var tagsField = $(clientId + '-tags');
-		tagsField.insert("<li class='u-tag' id='u-tag-" + TagSelect.tagId + "'><button type='button' class='u-tag-button'><span><span class='u-tag-value'>" + li.textContent + "</span></span></button><em class='u-tag-remove' onclick='TagSelect.removeSelection(\"" + clientId + "\", \"u-tag-" + TagSelect.tagId++ + "\", \"" + li.readAttribute('id') + "\")'></em></li>");
+		tagsField.insert("<li class='u-tag' id='u-tag-" + TagSelect.tagId + "'><button type='button' class='u-tag-button'><span><span class='u-tag-value'>" + li.innerHTML + "</span></span></button><em class='u-tag-remove' onclick='TagSelect.removeSelection(\"" + clientId + "\", \"u-tag-" + TagSelect.tagId++ + "\", \"" + li.readAttribute('id') + "\")'></em></li>");
 	},
 	
 	removeTag: function(tagId) {
