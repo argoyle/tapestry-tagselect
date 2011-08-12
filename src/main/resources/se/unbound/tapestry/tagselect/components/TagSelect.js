@@ -26,8 +26,10 @@ var TagSelect = {
 
 			var tags = $(field.id + '-tags').childElements();
 			if (tags.length > 0) {
-				var value = tag.select('span.u-tag-value')[0].innerHTML;
-				TagSelect.removeSelection(field.id, tags[tags.length - 1].id, value);
+				var tag = tags[tags.length - 1];
+				var values = $A($(field.id + '-values').value.split(';'));
+				var value = values[values.length - 1];
+				TagSelect.removeSelection(field.id, tag.id, value);
 			}
 			
 			return false;

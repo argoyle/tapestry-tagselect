@@ -76,12 +76,12 @@
 }
 
 .u-tagselect .u-trigger {
-  background: url("./dropdown.png") no-repeat scroll transparent 100% 13px;
+  background: url("./dropdown.png") no-repeat scroll transparent 100% 100%;
 	position: absolute;
 	bottom: 0;
 	right: 0;
-	width: 1em;
-	height: 1.5em;
+	width: 19px;
+	height: 20px;
 	cursor: pointer;
 	font-size: 1.5em;
 }
