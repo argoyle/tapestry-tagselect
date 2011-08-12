@@ -302,7 +302,7 @@ public class TagSelect extends AbstractField {
 
         private void writeSelectedItem(final MarkupWriter writer, final Object item) {
             final String clientValue = TagSelect.this.toClient(item);
-            final String label = TagSelect.this.encoder.getLabel(item);
+            final String label = this.getLabel(item);
             final Long itemId = System.nanoTime();
             writer.element("li", "class", "u-tag", "id", "u-tag-" + itemId);
             writer.element("button", "type", "button", "class", "u-tag-button");
@@ -316,6 +316,13 @@ public class TagSelect extends AbstractField {
                     + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
             writer.end();
             writer.end();
+        }
+
+        private String getLabel(final Object item) {
+            if (TagSelect.this.encoder != null) {
+                return TagSelect.this.encoder.getLabel(item);
+            }
+            return String.valueOf(item);
         }
     }
 
