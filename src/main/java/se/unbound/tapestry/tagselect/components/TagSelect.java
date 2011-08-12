@@ -16,7 +16,6 @@ import org.apache.tapestry5.MarkupWriter;
 import org.apache.tapestry5.OptionModel;
 import org.apache.tapestry5.Renderable;
 import org.apache.tapestry5.SelectModel;
-import org.apache.tapestry5.ValueEncoder;
 import org.apache.tapestry5.annotations.Events;
 import org.apache.tapestry5.annotations.Import;
 import org.apache.tapestry5.annotations.Parameter;
@@ -31,6 +30,8 @@ import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.ResponseRenderer;
 import org.apache.tapestry5.services.javascript.JavaScriptSupport;
 import org.apache.tapestry5.util.TextStreamResponse;
+
+import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
 
 /**
  * Select component similar to the version select in Jira.
@@ -63,11 +64,11 @@ public class TagSelect extends AbstractField {
     private Object value;
 
     /**
-     * Allows a specific implementation of {@link ValueEncoder} to be supplied. This is used to create client-side
-     * string values for the different options.
+     * Allows a specific implementation of {@link LabelAwareValueEncoder} to be supplied. This is used to create
+     * client-side string values and labels for the different options.
      */
     @Parameter
-    private ValueEncoder<Object> encoder;
+    private LabelAwareValueEncoder<Object> encoder;
 
     @Persist
     private AtomicReference<SelectModel> model;
@@ -119,7 +120,7 @@ public class TagSelect extends AbstractField {
                 }
             }
         } else if (items.length > 0) {
-            this.value = items[0];
+            this.value = this.toValue(items[0]);
         } else {
             this.value = null;
         }
@@ -301,12 +302,13 @@ public class TagSelect extends AbstractField {
 
         private void writeSelectedItem(final MarkupWriter writer, final Object item) {
             final String clientValue = TagSelect.this.toClient(item);
+            final String label = TagSelect.this.encoder.getLabel(item);
             final Long itemId = System.nanoTime();
             writer.element("li", "class", "u-tag", "id", "u-tag-" + itemId);
             writer.element("button", "type", "button", "class", "u-tag-button");
             writer.element("span");
             writer.element("span", "class", "u-tag-value");
-            writer.write(clientValue);
+            writer.write(label);
             writer.end();
             writer.end();
             writer.end();
