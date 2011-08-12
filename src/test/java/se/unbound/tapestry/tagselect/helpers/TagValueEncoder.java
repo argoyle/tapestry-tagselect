@@ -1,10 +1,9 @@
 package se.unbound.tapestry.tagselect.helpers;
 
-import org.apache.tapestry5.ValueEncoder;
-
+import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
 import se.unbound.tapestry.tagselect.services.TagSource;
 
-public class TagValueEncoder implements ValueEncoder<Tag> {
+public class TagValueEncoder implements LabelAwareValueEncoder<Tag> {
     @Override
     public String toClient(final Tag value) {
         return String.valueOf(value.getId());
@@ -18,5 +17,10 @@ public class TagValueEncoder implements ValueEncoder<Tag> {
             }
         }
         return null;
+    }
+
+    @Override
+    public String getLabel(final Tag value) {
+        return value.getValue();
     }
 }

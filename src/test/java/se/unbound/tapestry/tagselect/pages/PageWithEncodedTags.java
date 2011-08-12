@@ -3,13 +3,13 @@ package se.unbound.tapestry.tagselect.pages;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tapestry5.ValueEncoder;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.ioc.annotations.Inject;
 
 import se.unbound.tapestry.tagselect.helpers.Tag;
 import se.unbound.tapestry.tagselect.helpers.TagValueEncoder;
+import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
 import se.unbound.tapestry.tagselect.services.TagSource;
 
 public class PageWithEncodedTags {
@@ -27,7 +27,7 @@ public class PageWithEncodedTags {
         }
     }
 
-    public ValueEncoder<Tag> getEncoder() {
+    public LabelAwareValueEncoder<Tag> getEncoder() {
         return new TagValueEncoder();
     }
 

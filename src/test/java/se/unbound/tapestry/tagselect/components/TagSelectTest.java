@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.apache.tapestry5.SelectModel;
 import org.apache.tapestry5.StreamResponse;
-import org.apache.tapestry5.ValueEncoder;
 import org.apache.tapestry5.dom.Document;
 import org.apache.tapestry5.dom.Element;
 import org.apache.tapestry5.internal.OptionModelImpl;
@@ -30,6 +29,7 @@ import se.unbound.tapestry.tagselect.mocks.MarkupWriterFactoryMock;
 import se.unbound.tapestry.tagselect.mocks.RequestMock;
 import se.unbound.tapestry.tagselect.mocks.ResponseRendererMock;
 import se.unbound.tapestry.tagselect.mocks.TypeCoercerMock;
+import se.unbound.tapestry.tagselect.services.LabelAwareValueEncoder;
 import se.unbound.tapestry.tagselect.services.TagSource;
 import se.unbound.tapestry.tagselect.services.TestModule;
 
@@ -122,7 +122,6 @@ public class TagSelectTest extends PageTester {
         TagSource.TAGS.add(new Tag(Long.valueOf(456), "Tag456"));
 
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_ENCODED_TAGS);
-        System.out.println(document.toString());
         final Element element = document.getElementById("tags-values");
         assertEquals("value", "123;456", element.getAttribute("value"));
     }
@@ -133,7 +132,6 @@ public class TagSelectTest extends PageTester {
         TagSource.TAGS.add(new Tag(Long.valueOf(456), "Tag456"));
 
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_ENCODED_TAGS);
-        System.out.println(document.toString());
         final Element form = document.getElementById("form");
         final Map<String, String> params = new HashMap<String, String>();
         params.put("tags-values", "456");
@@ -229,7 +227,7 @@ public class TagSelectTest extends PageTester {
         }
     }
 
-    private static class ValueEncoderMock implements ValueEncoder<String> {
+    private static class ValueEncoderMock implements LabelAwareValueEncoder<String> {
         @Override
         public String toClient(final String value) {
             return "client";
@@ -238,6 +236,11 @@ public class TagSelectTest extends PageTester {
         @Override
         public String toValue(final String clientValue) {
             return "value";
+        }
+
+        @Override
+        public String getLabel(final String value) {
+            return "label";
         }
     }
 }
