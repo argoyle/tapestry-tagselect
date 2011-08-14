@@ -120,10 +120,8 @@ public class TagSelect extends AbstractField {
                     collection.add(this.toValue(string));
                 }
             }
-            // } else if (items.length > 0) {
         } else {
             this.value = this.toValue(items[0]);
-            // this.value = null;
         }
     }
 
