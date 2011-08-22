@@ -12,15 +12,19 @@ Add a dependency to your POM:
     <dependency>
       <groupId>se.unbound</groupId>
       <artifactId>tapestry-tagselect</artifactId>
-      <version>1.2</version>
+      <version>1.3</version>
     </dependency>
 
 Add the component to your template:
 
     <div t:type="tag/tagselect" t:id="tags" t:value="tags" t:encoder="encoder" />
 
-In your page you need a property for the currently selected tags. If the tags are strings, no encoder is necessary, otherwise a 
-ValueEncoder need to be provided via the encoder-attribute.
+In your page you need a property for the currently selected tags. If the property is a Collection the component allows 
+multi-select, otherwise it's single-select.
+
+If the tags are strings, no encoder is necessary, otherwise a LabelAwareValueEncoder need to be provided via the 
+encoder-attribute. The LabelAwareValueEncoder is a special extension of the standard Tapestry ValueEncoder with the small addition 
+of being able to get a label for the value.
 
 The component uses an Ajax.Autocompleter when retrieving the possible tag-values so a method for the provideCompletions-event that 
 return a SelectModel is necessary in the page-class as well.
