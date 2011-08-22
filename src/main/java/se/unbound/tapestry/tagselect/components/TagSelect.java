@@ -223,7 +223,7 @@ public class TagSelect extends AbstractField {
 
             writer.element("div", "class", "u-clear");
             writer.element("em", "id", this.clientId + "trigger", "class", "u-trigger", "onclick",
-                    "TagSelect.triggerCompletion(" + this.clientId + ")");
+                    "TagSelect.triggerCompletion($('" + this.clientId + "'))");
             writer.end();
             writer.end();
 
