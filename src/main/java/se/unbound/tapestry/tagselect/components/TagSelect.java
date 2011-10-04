@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tapestry5.BindingConstants;
 import org.apache.tapestry5.ComponentEventCallback;
 import org.apache.tapestry5.ComponentResources;
 import org.apache.tapestry5.ContentType;
@@ -63,6 +64,21 @@ public class TagSelect extends AbstractField {
 
     @Parameter(required = true)
     private Object value;
+
+    @Parameter(required = false)
+    private final boolean dropdown = false;
+
+    @Parameter(required = false)
+    private final boolean vertical = false;
+
+    @Parameter(required = false, defaultPrefix = BindingConstants.LITERAL)
+    private String blankLabel;
+
+    @Parameter(defaultPrefix = BindingConstants.LITERAL)
+    private double frequency;
+
+    @Parameter(defaultPrefix = BindingConstants.LITERAL)
+    private int minChars;
 
     /**
      * Allows a specific implementation of {@link LabelAwareValueEncoder} to be supplied. This is used to create
@@ -138,19 +154,30 @@ public class TagSelect extends AbstractField {
             final String currentValues) {
         final List<String> values = Arrays.asList(currentValues.split(";"));
         writer.element("ul");
-
         if (selectModel != null) {
             for (final OptionModel o : selectModel.getOptions()) {
                 final String clientValue = this.toClient(o.getValue());
+                final boolean newItem = o.getLabel().toLowerCase().startsWith("add");
                 if (!values.contains(clientValue)) {
                     writer.element("li", "id", clientValue);
-                    writer.write(o.getLabel());
+
+                    if (newItem) {
+                        writer.element("span");
+                        writer.write("Add ");
+                        writer.end();
+                    }
+
+                    writer.element("span", "id", clientValue + "-label");
+                    if (newItem) {
+                        writer.write(o.getLabel().replace("Add ", ""));
+                    } else {
+                        writer.write(o.getLabel());
+                    }
+                    writer.end();
                     writer.end();
                 }
             }
         }
-
-        // ul
         writer.end();
     }
 
@@ -194,41 +221,83 @@ public class TagSelect extends AbstractField {
 
         @Override
         public void render(final MarkupWriter writer) {
-            writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
-                    this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
-            writer.end();
-            writer.element("textarea", "autocomplete", "off", "id", this.clientId, "class", "u-textarea");
-            if (this.isSingleSelect(TagSelect.this.value)) {
-                writer.attributes("u:type", "single");
-            }
-            writer.end();
-
             final String menuId = this.clientId + ":menu";
+            final String uiDropdown = TagSelect.this.dropdown ? " uiDropdown" : "";
+            final String uiVertical = TagSelect.this.vertical ? " uiVertical" : "";
+            // Tokens
 
-            writer.element("div",
-                    "id", menuId,
-                    "class", "u-autocomplete-menu");
-            writer.end();
+            if (this.isSingleSelect(TagSelect.this.value)) {
+                writer.element("div", "id", this.clientId + "-uiTokenizer-container", "class",
+                        "uiTokenizerCt uiTypeahead uiTokenizerSingle");
+                // hidden input field
+                writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
+                        this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
+                writer.end();
+                if (this.isSingleSelect(TagSelect.this.value)) {
+                    final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
 
-            writer.element("div", "id", this.clientId + "-tag-container", "class", "u-tag-container");
-            writer.element("ul", "id", this.clientId + "-tags", "class", "u-tags");
-            final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
-            for (final Object each : collection) {
-                this.writeSelectedItem(writer, each);
+                    if (collection.isEmpty()) {
+                        this.writeSelectedItem(writer, TagSelect.this.value, true);
+                    }
+
+                    for (final Object each : collection) {
+                        this.writeSelectedItem(writer, each, true);
+                    }
+                }
+                // Autocomplete menu
+                writer.element("div", "id", menuId, "class", "uiTypeaheadView");
+                writer.end();
+                writer.end();
+            } else {
+                writer.element("div", "id", this.clientId + "-uiTokenizer-container", "class",
+                        "uiTokenizerCt clearfix uiTokenizerMulti" + uiDropdown + uiVertical);
+                // Hidden Field
+                writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
+                        this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
+                writer.end();
+                writer.element("div", "id", this.clientId + "-tags", "class", "uiTokens");
+                final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
+                for (final Object each : collection) {
+                    this.writeSelectedItem(writer, each, false);
+                }
+                writer.end();
+
+                // Text Area
+                writer.element("div", "id", this.clientId + "-uiTypeahead", "class", "uiTypeahead clearfix");
+                if (TagSelect.this.dropdown && TagSelect.this.vertical) {
+                    this.writeDropdownArrow(writer, true);
+                }
+                if (TagSelect.this.blankLabel != null) {
+                    writer.element("div", "id", this.clientId + "-uiTokenLabel", "class", "uiTokenLabel");
+                    writer.write(TagSelect.this.blankLabel);
+                    writer.end();
+                }
+                writer.element("div", "class", "wrap");
+                writer.element("div", "class", "innerWrap");
+                writer.element("input", "type", "text", "autocomplete", "off", "id", this.clientId, "class",
+                        "inputtext", "size", "1");
+                if (!TagSelect.this.vertical) {
+                    writer.attributes("u:type", "multi");
+                }
+                writer.end();
+                writer.end();
+                writer.end();
+                writer.end();
+
+                writer.element("div", "id", menuId, "class", "uiTypeaheadView");
+                writer.end();
+
+                // Dropdown Arrow
+                if (TagSelect.this.dropdown && !TagSelect.this.vertical) {
+                    this.writeDropdownArrow(writer, true);
+                }
+                writer.end();
             }
-            writer.end();
-            writer.end();
-            TagSelect.this.javaScriptSupport.addScript(
-                    "TagSelect.updatePadding('%s');", this.clientId);
 
-            writer.element("div", "class", "u-clear");
-            writer.element("em", "id", this.clientId + "trigger", "class", "u-trigger", "onclick",
-                    "TagSelect.triggerCompletion($('" + this.clientId + "'))");
-            writer.end();
-            writer.end();
-
+            // Initializes scripts
             TagSelect.this.javaScriptSupport.addScript(
-                    "TagSelect.registerKeyevent('%s');", this.clientId);
+                    "TagSelect.initialize('%s', '%s');", this.clientId,
+                    this.getSelectedValue(TagSelect.this.value));
 
             TagSelect.this.resources.renderInformalParameters(writer);
 
@@ -236,10 +305,11 @@ public class TagSelect extends AbstractField {
 
             final JSONObject config = new JSONObject();
             config.put("paramName", TagSelect.PARAM_NAME);
-            config.put("minChars", "0");
+            config.put("minChars", TagSelect.this.minChars);
+            config.put("frequency", TagSelect.this.frequency);
 
-            final String methodAfterUpdate = "function (li) { TagSelect.addSelection('" + this.clientId
-                    + "', li); }";
+            final String methodAfterUpdate = "function (span) { TagSelect.addToken('" + this.clientId
+                    + "', span); }";
             config.put("updateElement", methodAfterUpdate);
             final String callback = "function(field, query) { return query + '&values=' + $('"
                     + this.clientId + "-values').value; }";
@@ -302,20 +372,52 @@ public class TagSelect extends AbstractField {
             return builder.toString();
         }
 
-        private void writeSelectedItem(final MarkupWriter writer, final Object item) {
-            final String clientValue = TagSelect.this.toClient(item);
-            final String label = this.getLabel(item);
+        private void writeSelectedItem(final MarkupWriter writer, final Object item, final boolean single) {
+            final String clientValue = item != null ? TagSelect.this.toClient(item) : "";
+            final String label = item != null ? this.getLabel(item) : "";
             final Long itemId = System.nanoTime();
-            writer.element("li", "class", "u-tag", "id", "u-tag-" + itemId);
-            writer.element("button", "type", "button", "class", "u-tag-button");
-            writer.element("span");
-            writer.element("span", "class", "u-tag-value");
-            writer.write(label);
-            writer.end();
-            writer.end();
-            writer.end();
-            writer.element("em", "class", "u-tag-remove", "onclick", "TagSelect.removeSelection('"
-                    + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
+            final String selected = item != null ? "selected" : "";
+
+            if (single) {
+                writer.element("div", "id", this.clientId + "-tags", "class", "wrap " + selected);
+                writer.element("a", "onclick", "TagSelect.removeToken('"
+                        + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
+                writer.end();
+                if (TagSelect.this.dropdown) {
+                    final boolean display = item == null;
+                    this.writeDropdownArrow(writer, display);
+                }
+                if (TagSelect.this.blankLabel != null) {
+                    writer.element("div", "id", this.clientId + "-uiTokenLabel", "class", "uiTokenLabel");
+                    writer.write(TagSelect.this.blankLabel);
+                    writer.end();
+                }
+                writer.element("input", "type", "text", "value", label, "u:type", "single", "autocomplete",
+                        "off", "id", this.clientId, "class", "inputtext");
+                writer.end();
+                writer.end();
+            } else {
+                writer.element("span", "title", label, "id", "u-tag-" + itemId);
+                writer.write(label);
+
+                writer.element("a", "onclick", "TagSelect.removeToken('"
+                        + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
+                writer.end();
+                writer.end();
+            }
+        }
+
+        private void writeDropdownArrow(final MarkupWriter writer, final boolean display) {
+            String cssStyle = "block";
+
+            if (!display) {
+                cssStyle = "none";
+            }
+
+            writer.element("div", "id", this.clientId + "-trigger", "style", "display:" + cssStyle, "class",
+                    "uiTokenDropdown", "onclick",
+                    "TagSelect.triggerCompletion($('" + this.clientId + "'))");
+            writer.element("div");
             writer.end();
             writer.end();
         }
