@@ -36,7 +36,8 @@ import se.unbound.tapestry.tagselect.AutoCompleteCallback;
 import se.unbound.tapestry.tagselect.LabelAwareValueEncoder;
 
 /**
- * Select component similar to the version select in Jira.
+ * Select component similar to the version select in Jira or the language select at Facebook. It's also possible to use
+ * in a vertical mode where each tag is a separate input field.
  */
 @Import(library = { "${tapestry.scriptaculous}/controls.js", "TagSelect.js" }, stylesheet = "TagSelect.css")
 @Events(EventConstants.PROVIDE_COMPLETIONS)
@@ -66,10 +67,10 @@ public class TagSelect extends AbstractField {
     private Object value;
 
     @Parameter(required = false)
-    private final boolean dropdown = false;
+    private boolean dropdown;
 
     @Parameter(required = false)
-    private final boolean vertical = false;
+    private boolean vertical;
 
     @Parameter(required = false, defaultPrefix = BindingConstants.LITERAL)
     private String blankLabel;
@@ -129,6 +130,7 @@ public class TagSelect extends AbstractField {
 
     private void updateValue(final String[] items) {
         if (this.value instanceof Collection<?>) {
+            @SuppressWarnings("unchecked")
             final Collection<Object> collection = (Collection<Object>) this.value;
             collection.clear();
             for (final String string : items) {
@@ -157,22 +159,11 @@ public class TagSelect extends AbstractField {
         if (selectModel != null) {
             for (final OptionModel o : selectModel.getOptions()) {
                 final String clientValue = this.toClient(o.getValue());
-                final boolean newItem = o.getLabel().toLowerCase().startsWith("add");
                 if (!values.contains(clientValue)) {
                     writer.element("li", "id", clientValue);
 
-                    if (newItem) {
-                        writer.element("span");
-                        writer.write("Add ");
-                        writer.end();
-                    }
-
                     writer.element("span", "id", clientValue + "-label");
-                    if (newItem) {
-                        writer.write(o.getLabel().replace("Add ", ""));
-                    } else {
-                        writer.write(o.getLabel());
-                    }
+                    writer.write(o.getLabel());
                     writer.end();
                     writer.end();
                 }
@@ -222,76 +213,13 @@ public class TagSelect extends AbstractField {
         @Override
         public void render(final MarkupWriter writer) {
             final String menuId = this.clientId + ":menu";
-            final String uiDropdown = TagSelect.this.dropdown ? " uiDropdown" : "";
-            final String uiVertical = TagSelect.this.vertical ? " uiVertical" : "";
+            final String additionalClasses = this.getAdditionalClasses();
+
             // Tokens
-
             if (this.isSingleSelect(TagSelect.this.value)) {
-                writer.element("div", "id", this.clientId + "-uiTokenizer-container", "class",
-                        "uiTokenizerCt uiTypeahead uiTokenizerSingle");
-                // hidden input field
-                writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
-                        this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
-                writer.end();
-                if (this.isSingleSelect(TagSelect.this.value)) {
-                    final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
-
-                    if (collection.isEmpty()) {
-                        this.writeSelectedItem(writer, TagSelect.this.value, true);
-                    }
-
-                    for (final Object each : collection) {
-                        this.writeSelectedItem(writer, each, true);
-                    }
-                }
-                // Autocomplete menu
-                writer.element("div", "id", menuId, "class", "uiTypeaheadView");
-                writer.end();
-                writer.end();
+                this.renderSingleSelect(writer, menuId);
             } else {
-                writer.element("div", "id", this.clientId + "-uiTokenizer-container", "class",
-                        "uiTokenizerCt clearfix uiTokenizerMulti" + uiDropdown + uiVertical);
-                // Hidden Field
-                writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
-                        this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
-                writer.end();
-                writer.element("div", "id", this.clientId + "-tags", "class", "uiTokens");
-                final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
-                for (final Object each : collection) {
-                    this.writeSelectedItem(writer, each, false);
-                }
-                writer.end();
-
-                // Text Area
-                writer.element("div", "id", this.clientId + "-uiTypeahead", "class", "uiTypeahead clearfix");
-                if (TagSelect.this.dropdown && TagSelect.this.vertical) {
-                    this.writeDropdownArrow(writer, true);
-                }
-                if (TagSelect.this.blankLabel != null) {
-                    writer.element("div", "id", this.clientId + "-uiTokenLabel", "class", "uiTokenLabel");
-                    writer.write(TagSelect.this.blankLabel);
-                    writer.end();
-                }
-                writer.element("div", "class", "wrap");
-                writer.element("div", "class", "innerWrap");
-                writer.element("input", "type", "text", "autocomplete", "off", "id", this.clientId, "class",
-                        "inputtext", "size", "1");
-                if (!TagSelect.this.vertical) {
-                    writer.attributes("u:type", "multi");
-                }
-                writer.end();
-                writer.end();
-                writer.end();
-                writer.end();
-
-                writer.element("div", "id", menuId, "class", "uiTypeaheadView");
-                writer.end();
-
-                // Dropdown Arrow
-                if (TagSelect.this.dropdown && !TagSelect.this.vertical) {
-                    this.writeDropdownArrow(writer, true);
-                }
-                writer.end();
+                this.renderMultiSelect(writer, menuId, additionalClasses);
             }
 
             // Initializes scripts
@@ -305,8 +233,8 @@ public class TagSelect extends AbstractField {
 
             final JSONObject config = new JSONObject();
             config.put("paramName", TagSelect.PARAM_NAME);
-            config.put("minChars", TagSelect.this.minChars);
-            config.put("frequency", TagSelect.this.frequency);
+            config.put("minChars", String.valueOf(TagSelect.this.minChars));
+            config.put("frequency", String.valueOf(TagSelect.this.frequency));
 
             final String methodAfterUpdate = "function (span) { TagSelect.addToken('" + this.clientId
                     + "', span); }";
@@ -324,10 +252,95 @@ public class TagSelect extends AbstractField {
                     link.toAbsoluteURI(), configString);
         }
 
+        private String getAdditionalClasses() {
+            final List<String> classes = new ArrayList<String>();
+
+            if (TagSelect.this.dropdown) {
+                classes.add("uiDropdown");
+            }
+            if (TagSelect.this.vertical) {
+                classes.add("uiVertical");
+            }
+
+            return StringUtils.join(classes, " ");
+        }
+
+        private void renderMultiSelect(final MarkupWriter writer, final String menuId,
+                final String additionalClasses) {
+            writer.element("div", "id", this.clientId + "-uiTokenizer-container", "class",
+                    "uiTokenizerCt clearfix uiTokenizerMulti " + additionalClasses);
+            // Hidden Field
+            writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
+                    this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
+            writer.end();
+            writer.element("div", "id", this.clientId + "-tags", "class", "uiTokens");
+            final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
+            for (final Object each : collection) {
+                this.writeSelectedItem(writer, each, false);
+            }
+            writer.end();
+
+            // Text Area
+            writer.element("div", "id", this.clientId + "-uiTypeahead", "class", "uiTypeahead clearfix");
+            if (TagSelect.this.dropdown && TagSelect.this.vertical) {
+                this.writeDropdownArrow(writer, true);
+            }
+            if (TagSelect.this.blankLabel != null) {
+                writer.element("div", "id", this.clientId + "-uiTokenLabel", "class", "uiTokenLabel");
+                writer.write(TagSelect.this.blankLabel);
+                writer.end();
+            }
+            writer.element("div", "class", "wrap");
+            writer.element("div", "class", "innerWrap");
+            writer.element("input", "type", "text", "autocomplete", "off", "id", this.clientId, "class",
+                    "inputtext", "size", "1");
+            if (!TagSelect.this.vertical) {
+                writer.attributes("u:type", "multi");
+            }
+            writer.end();
+            writer.end();
+            writer.end();
+            writer.end();
+
+            writer.element("div", "id", menuId, "class", "uiTypeaheadView");
+            writer.end();
+
+            // Dropdown Arrow
+            if (TagSelect.this.dropdown && !TagSelect.this.vertical) {
+                this.writeDropdownArrow(writer, true);
+            }
+            writer.end();
+        }
+
+        private void renderSingleSelect(final MarkupWriter writer, final String menuId) {
+            writer.element("div", "id", this.clientId + "-uiTokenizer-container", "class",
+                    "uiTokenizerCt uiTypeahead uiTokenizerSingle");
+            // hidden input field
+            writer.element("input", "type", "hidden", "id", this.clientId + "-values", "name",
+                    this.controlName + "-values", "value", this.getSelectedValue(TagSelect.this.value));
+            writer.end();
+            if (this.isSingleSelect(TagSelect.this.value)) {
+                final Collection<Object> collection = this.getSelectedTags(TagSelect.this.value);
+
+                if (collection.isEmpty()) {
+                    this.writeSelectedItem(writer, TagSelect.this.value, true);
+                }
+
+                for (final Object each : collection) {
+                    this.writeSelectedItem(writer, each, true);
+                }
+            }
+            // Autocomplete menu
+            writer.element("div", "id", menuId, "class", "uiTypeaheadView");
+            writer.end();
+            writer.end();
+        }
+
         private boolean isSingleSelect(final Object selectedValue) {
             return !(selectedValue instanceof Collection<?>);
         }
 
+        @SuppressWarnings("unchecked")
         private Collection<Object> getSelectedTags(final Object selectedValue) {
             final Collection<Object> selectedTags = new ArrayList<Object>();
 
@@ -345,6 +358,7 @@ public class TagSelect extends AbstractField {
             return !stringValue.trim().isEmpty();
         }
 
+        @SuppressWarnings("unchecked")
         private String getSelectedValue(final Object selectedValue) {
             String result = "";
             if (selectedValue instanceof Collection<?>) {
@@ -373,10 +387,25 @@ public class TagSelect extends AbstractField {
         }
 
         private void writeSelectedItem(final MarkupWriter writer, final Object item, final boolean single) {
-            final String clientValue = item != null ? TagSelect.this.toClient(item) : "";
-            final String label = item != null ? this.getLabel(item) : "";
+            final String clientValue;
+            if (item != null) {
+                clientValue = TagSelect.this.toClient(item);
+            } else {
+                clientValue = "";
+            }
+            final String label;
+            if (item != null) {
+                label = this.getLabel(item);
+            } else {
+                label = "";
+            }
             final Long itemId = System.nanoTime();
-            final String selected = item != null ? "selected" : "";
+            final String selected;
+            if (item != null) {
+                selected = "selected";
+            } else {
+                selected = "";
+            }
 
             if (single) {
                 writer.element("div", "id", this.clientId + "-tags", "class", "wrap " + selected);

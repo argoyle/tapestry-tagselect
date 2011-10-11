@@ -3,7 +3,7 @@
 <html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
   <body>
     <form t:type="form" t:id="form">
-      <div t:type="tag/tagselect" t:id="tags" t:dropdown="true" t:blanklabel="Select one or more tags" t:value="tags" style="width: 400px;"></div>
+      <div t:type="tag/tagselect" t:id="tags" t:value="tags" t:vertical="true" style="width: 400px;"></div>
       <t:submit/>
     </form>
   </body>

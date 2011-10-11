@@ -35,6 +35,8 @@ import se.unbound.tapestry.tagselect.services.TestModule;
 
 public class TagSelectTest extends PageTester {
     private static final String PAGE_WITH_STRING_TAGS = "pagewithstringtags";
+    private static final String PAGE_WITH_VERTICAL_STRING_TAGS = "pagewithverticalstringtags";
+    private static final String PAGE_WITH_VERTICAL_STRING_TAGS_AND_DROPDOWN = "pagewithverticalstringtagsanddropdown";
     private static final String PAGE_WITH_SINGLE_STRING_TAG = "pagewithsinglestringtag";
     private static final String PAGE_WITH_ENCODED_TAGS = "pagewithencodedtags";
     private static final String PAGE_WITH_SINGLE_ENCODED_TAG = "pagewithsingleencodedtag";
@@ -62,8 +64,8 @@ public class TagSelectTest extends PageTester {
     public void componentRendersTextArea() {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS);
         final Element element = document.getElementById("tags");
-        assertEquals("element name", "textarea", element.getName());
-        assertEquals("class", "u-textarea", element.getAttribute("class"));
+        assertEquals("element name", "input", element.getName());
+        assertEquals("class", "inputtext", element.getAttribute("class"));
         assertEquals("autocomplete", "off", element.getAttribute("autocomplete"));
     }
 
@@ -72,18 +74,19 @@ public class TagSelectTest extends PageTester {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS);
         final Element element = document.getElementById("tags:menu");
         assertEquals("element name", "div", element.getName());
-        assertEquals("class", "u-autocomplete-menu", element.getAttribute("class"));
+        assertEquals("class", "uiTypeaheadView", element.getAttribute("class"));
     }
 
     @Test
     public void componentRendersTagContainer() {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS);
-        final Element container = document.getElementById("tags-tag-container");
+        final Element container = document.getElementById("tags-uiTokenizer-container");
         assertEquals("element name", "div", container.getName());
-        assertEquals("class", "u-tag-container", container.getAttribute("class"));
-        final Element ul = document.getElementById("tags-tags");
-        assertEquals("element name", "ul", ul.getName());
-        assertEquals("class", "u-tags", ul.getAttribute("class"));
+        assertEquals("class", "uiTokenizerCt clearfix uiTokenizerMulti uiDropdown",
+                container.getAttribute("class"));
+        final Element div = document.getElementById("tags-tags");
+        assertEquals("element name", "div", div.getName());
+        assertEquals("class", "uiTokens", div.getAttribute("class"));
     }
 
     @Test
@@ -91,11 +94,8 @@ public class TagSelectTest extends PageTester {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS + "/tag123");
         final Element element = document.getElementById("tags-tags");
         final Pattern pattern = Pattern
-                .compile("<li id=\"u-tag-(\\d+)\" class=\"u-tag\">"
-                        + "<button class=\"u-tag-button\" type=\"button\">"
-                        + "<span><span class=\"u-tag-value\">tag123</span></span></button>"
-                        + "<em onclick=\"TagSelect.removeSelection\\('tags', 'u-tag-\\1', 'tag123'\\)\" "
-                        + "class=\"u-tag-remove\"></em></li>");
+                .compile("<span id=\"u-tag-(\\d+)\" title=\"tag123\">tag123<a " +
+                        "onclick=\"TagSelect.removeToken\\('tags', 'u-tag-\\1', 'tag123'\\)\"></a></span>");
         final Matcher matcher = pattern.matcher(element.getChildMarkup());
         assertTrue(matcher.matches());
     }
@@ -166,6 +166,47 @@ public class TagSelectTest extends PageTester {
     }
 
     @Test
+    public void componentRendersOneSpanForEachTagInVerticalMode() {
+        TagSource.TAGS.add(new Tag(Long.valueOf(123), "Tag123"));
+        TagSource.TAGS.add(new Tag(Long.valueOf(456), "Tag456"));
+
+        final Document document = this.renderPage(TagSelectTest.PAGE_WITH_VERTICAL_STRING_TAGS
+                + "/tag123/tag456");
+        assertTrue(document.getElementById("tags-uiTokenizer-container").getAttribute("class")
+                .contains("uiVertical"));
+        final Element tagContainer = document.getElementById("tags-tags");
+        assertEquals(2, tagContainer.getChildren().size());
+    }
+
+    @Test
+    public void componentRendersDropdownOnFieldForNewSelectionInVerticalMode() {
+        TagSource.TAGS.add(new Tag(Long.valueOf(456), "Tag456"));
+
+        final Document document = this.renderPage(TagSelectTest.PAGE_WITH_VERTICAL_STRING_TAGS_AND_DROPDOWN
+                + "/tag456");
+        assertTrue(document.getElementById("tags-uiTokenizer-container").getAttribute("class")
+                .contains("uiDropdown"));
+        final Element tagContainer = document.getElementById("tags-tags");
+        assertEquals(1, tagContainer.getChildren().size());
+        final Element trigger = document.getElementById("tags-trigger");
+        assertEquals("tags-uiTypeahead", trigger.getContainer().getAttribute("id"));
+    }
+
+    @Test
+    public void aLabelDivIsRenderedForMultiSelectIfBlankLabelIsSet() {
+        final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS);
+        final Element element = document.getElementById("tags-uiTokenLabel");
+        assertEquals("Select one or more tags", element.getChildMarkup());
+    }
+
+    @Test
+    public void aLabelDivIsRenderedForSingleSelectIfBlankLabelIsSet() {
+        final Document document = this.renderPage(TagSelectTest.PAGE_WITH_SINGLE_STRING_TAG);
+        final Element element = document.getElementById("tag-uiTokenLabel");
+        assertEquals("Select a tag", element.getChildMarkup());
+    }
+
+    @Test
     public void onAutocompleteReturnAStreamResponseWithTheGeneratedMarkup() throws Exception {
         final TagSelect tagSelect = new TagSelect();
         final RequestMock request = new RequestMock();
@@ -181,7 +222,8 @@ public class TagSelectTest extends PageTester {
 
         final StreamResponse streamResponse = (StreamResponse) tagSelect.onAutocomplete();
         assertNotNull("stream response", streamResponse);
-        assertEquals("markup", "<html><ul><li id=\"client\">label</li></ul></html>",
+        assertEquals("markup",
+                "<html><ul><li id=\"client\"><span id=\"client-label\">label</span></li></ul></html>",
                 IOUtils.toString(streamResponse.getStream()));
     }
 
