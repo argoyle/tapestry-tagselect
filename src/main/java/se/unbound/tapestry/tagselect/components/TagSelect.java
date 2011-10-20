@@ -78,7 +78,7 @@ public class TagSelect extends AbstractField {
     @Parameter(defaultPrefix = BindingConstants.LITERAL)
     private double frequency;
 
-    @Parameter(defaultPrefix = BindingConstants.LITERAL)
+    @Parameter(defaultPrefix = BindingConstants.LITERAL, value = "1")
     private int minChars;
 
     /**
@@ -222,11 +222,6 @@ public class TagSelect extends AbstractField {
                 this.renderMultiSelect(writer, menuId, additionalClasses);
             }
 
-            // Initializes scripts
-            TagSelect.this.javaScriptSupport.addScript(
-                    "TagSelect.initialize('%s', '%s');", this.clientId,
-                    this.getSelectedValue(TagSelect.this.value));
-
             TagSelect.this.resources.renderInformalParameters(writer);
 
             final Link link = TagSelect.this.resources.createEventLink(TagSelect.EVENT_NAME);
@@ -236,8 +231,8 @@ public class TagSelect extends AbstractField {
             config.put("minChars", String.valueOf(TagSelect.this.minChars));
             config.put("frequency", String.valueOf(TagSelect.this.frequency));
 
-            final String methodAfterUpdate = "function (span) { TagSelect.addToken('" + this.clientId
-                    + "', span); }";
+            final String methodAfterUpdate = "function (span) { $('" + this.clientId
+                    + "').tagSelect.addToken(span); }";
             config.put("updateElement", methodAfterUpdate);
             final String callback = "function(field, query) { return query + '&values=' + $('"
                     + this.clientId + "-values').value; }";
@@ -247,9 +242,12 @@ public class TagSelect extends AbstractField {
             configString = configString.replace("\"" + methodAfterUpdate + "\"", methodAfterUpdate);
             configString = configString.replace("\"" + callback + "\"", callback);
 
+            // Initializes scripts
+            final String autocompleter = String.format("new Ajax.Autocompleter('%s', '%s', '%s', %s)",
+                    this.clientId, menuId, link.toAbsoluteURI(), configString);
             TagSelect.this.javaScriptSupport.addScript(
-                    "new Ajax.Autocompleter('%s', '%s', '%s', %s);", this.clientId, menuId,
-                    link.toAbsoluteURI(), configString);
+                    "$('%s').tagSelect = new TagSelect('%s', '%s', %s);", this.clientId, this.clientId,
+                    this.getSelectedValue(TagSelect.this.value), autocompleter);
         }
 
         private String getAdditionalClasses() {
@@ -409,8 +407,9 @@ public class TagSelect extends AbstractField {
 
             if (single) {
                 writer.element("div", "id", this.clientId + "-tags", "class", "wrap " + selected);
-                writer.element("a", "onclick", "TagSelect.removeToken('"
-                        + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
+                writer.element("a", "onclick", String
+                        .format("$('%s').tagSelect.removeToken('u-tag-%s', '%s')", this.clientId, itemId,
+                                clientValue));
                 writer.end();
                 if (TagSelect.this.dropdown) {
                     final boolean display = item == null;
@@ -429,8 +428,9 @@ public class TagSelect extends AbstractField {
                 writer.element("span", "title", label, "id", "u-tag-" + itemId);
                 writer.write(label);
 
-                writer.element("a", "onclick", "TagSelect.removeToken('"
-                        + this.clientId + "', 'u-tag-" + itemId + "', '" + clientValue + "')");
+                writer.element("a", "onclick", String
+                        .format("$('%s').tagSelect.removeToken('u-tag-%s', '%s')", this.clientId, itemId,
+                                clientValue));
                 writer.end();
                 writer.end();
             }
@@ -444,8 +444,8 @@ public class TagSelect extends AbstractField {
             }
 
             writer.element("div", "id", this.clientId + "-trigger", "style", "display:" + cssStyle, "class",
-                    "uiTokenDropdown", "onclick",
-                    "TagSelect.triggerCompletion($('" + this.clientId + "'))");
+                    "uiTokenDropdown", "onclick", "new function() { $('" +
+                            this.clientId + "').tagSelect.triggerCompletion(); }");
             writer.element("div");
             writer.end();
             writer.end();
