@@ -94,8 +94,9 @@ public class TagSelectTest extends PageTester {
         final Document document = this.renderPage(TagSelectTest.PAGE_WITH_STRING_TAGS + "/tag123");
         final Element element = document.getElementById("tags-tags");
         final Pattern pattern = Pattern
-                .compile("<span id=\"u-tag-(\\d+)\" title=\"tag123\">tag123<a " +
-                        "onclick=\"TagSelect.removeToken\\('tags', 'u-tag-\\1', 'tag123'\\)\"></a></span>");
+                .compile("<span id=\"u-tag-(\\d+)\" title=\"tag123\">tag123<a "
+                        +
+                        "onclick=\"\\$\\('tags'\\).tagSelect.removeToken\\('u-tag-\\1', 'tag123'\\)\"></a></span>");
         final Matcher matcher = pattern.matcher(element.getChildMarkup());
         assertTrue(matcher.matches());
     }
