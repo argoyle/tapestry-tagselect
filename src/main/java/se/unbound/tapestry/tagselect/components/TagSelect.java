@@ -66,7 +66,7 @@ public class TagSelect extends AbstractField {
     @Parameter(required = true)
     private Object value;
 
-    @Parameter(required = false)
+    @Parameter(required = false, value = "true")
     private boolean dropdown;
 
     @Parameter(required = false)
