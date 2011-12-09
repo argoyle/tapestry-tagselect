@@ -179,7 +179,7 @@ var TagSelect = Class.create({
     },
 	
     triggerCompletion: function(field) {
-    	this.autocompleter.activate();
+    	setTimeout(this.autocompleter.activate.bind(this.autocompleter), 200);
     },
 	
     addToValueField: function(span) {
