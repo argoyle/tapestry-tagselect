@@ -25,6 +25,7 @@ import org.apache.tapestry5.annotations.SetupRender;
 import org.apache.tapestry5.corelib.base.AbstractField;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
+import org.apache.tapestry5.json.JSONLiteral;
 import org.apache.tapestry5.json.JSONObject;
 import org.apache.tapestry5.services.MarkupWriterFactory;
 import org.apache.tapestry5.services.Request;
@@ -80,6 +81,9 @@ public class TagSelect extends AbstractField {
 
     @Parameter(defaultPrefix = BindingConstants.LITERAL, value = "1")
     private int minChars;
+
+    @Parameter(defaultPrefix = BindingConstants.LITERAL)
+    private String afterUpdateMethod;
 
     /**
      * Allows a specific implementation of {@link LabelAwareValueEncoder} to be supplied. This is used to create
@@ -231,16 +235,23 @@ public class TagSelect extends AbstractField {
             config.put("minChars", String.valueOf(TagSelect.this.minChars));
             config.put("frequency", String.valueOf(TagSelect.this.frequency));
 
-            final String methodAfterUpdate = "function (span) { $('" + this.clientId
-                    + "').tagSelect.addToken(span); }";
-            config.put("updateElement", methodAfterUpdate);
+            if (StringUtils.isNotBlank(TagSelect.this.afterUpdateMethod)) {
+                config.put("afterUpdateElement", new JSONLiteral(TagSelect.this.afterUpdateMethod));
+            }
+
+            final String updateElement = String
+                    .format("function (span) { $('%1$s').tagSelect.addToken(span); "
+                            + "var autocompleter = $('%1$s').tagSelect.autocompleter; " +
+                            "if (autocompleter.options.afterUpdateElement) "
+                            + "autocompleter.options.afterUpdateElement(autocompleter.element, span); }",
+                            this.clientId);
+            config.put("updateElement", new JSONLiteral(updateElement));
+
             final String callback = "function(field, query) { return query + '&values=' + $('"
                     + this.clientId + "-values').value; }";
-            config.put("callback", callback);
+            config.put("callback", new JSONLiteral(callback));
 
-            String configString = config.toString();
-            configString = configString.replace("\"" + methodAfterUpdate + "\"", methodAfterUpdate);
-            configString = configString.replace("\"" + callback + "\"", callback);
+            final String configString = config.toString();
 
             // Initializes scripts
             final String autocompleter = String.format("new Ajax.Autocompleter('%s', '%s', '%s', %s)",
