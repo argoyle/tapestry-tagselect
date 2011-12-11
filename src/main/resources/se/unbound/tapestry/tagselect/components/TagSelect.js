@@ -270,7 +270,7 @@ var TagSelect = Class.create({
 
     //handles keys that need to be ignored with clear single
     ignoreKeys: function(event) {
-        var keyCodes = new Array(9, 16, 17, 18, 20, 33, 34, 35, 36, 45, 91, 92, 93, 144);        
+        var keyCodes = new Array(9, 13, 16, 17, 18, 20, 33, 34, 35, 36, 45, 91, 92, 93, 144);
         return keyCodes.indexOf(event.keyCode) != -1;
     }  
 });
