@@ -287,6 +287,10 @@ public class TagSelect extends AbstractField {
             for (final Object each : collection) {
                 this.writeSelectedItem(writer, each, false);
             }
+            if (TagSelect.this.dropdown && !TagSelect.this.vertical) {
+                writer.element("div", "class", "clearfix");
+                writer.end();
+            }
             writer.end();
 
             // Text Area
