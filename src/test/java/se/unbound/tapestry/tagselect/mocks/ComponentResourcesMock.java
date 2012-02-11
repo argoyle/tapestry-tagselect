@@ -19,6 +19,7 @@ import org.apache.tapestry5.ioc.Resource;
 import org.apache.tapestry5.model.ComponentModel;
 import org.apache.tapestry5.runtime.Component;
 import org.apache.tapestry5.runtime.PageLifecycleListener;
+import org.apache.tapestry5.services.pageload.ComponentResourceSelector;
 import org.slf4j.Logger;
 
 /**
@@ -283,6 +284,11 @@ public class ComponentResourcesMock implements ComponentResources {
 
     @Override
     public boolean isMixin() {
+        throw new UnsupportedOperationException("Not yet implemented!");
+    }
+
+    @Override
+    public ComponentResourceSelector getResourceSelector() {
         throw new UnsupportedOperationException("Not yet implemented!");
     }
 }

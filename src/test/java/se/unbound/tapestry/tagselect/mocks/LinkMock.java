@@ -3,6 +3,7 @@ package se.unbound.tapestry.tagselect.mocks;
 import java.util.List;
 
 import org.apache.tapestry5.Link;
+import org.apache.tapestry5.internal.services.LinkSecurity;
 
 /**
  * Mock implementation of the Link interface for unit testing.
@@ -81,6 +82,16 @@ public class LinkMock implements Link {
 
     @Override
     public String toAbsoluteURI(final boolean secure) {
+        throw new UnsupportedOperationException("Not yet implemented!");
+    }
+
+    @Override
+    public LinkSecurity getSecurity() {
+        throw new UnsupportedOperationException("Not yet implemented!");
+    }
+
+    @Override
+    public void setSecurity(final LinkSecurity arg0) {
         throw new UnsupportedOperationException("Not yet implemented!");
     }
 }
